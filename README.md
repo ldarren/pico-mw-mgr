@@ -30,6 +30,8 @@ this middleware manager is created to solve this problem. it does:
 you are allow to define your route this way with route
 
 ```javascript
+const mwm = require('pico-mw-mgr')
+
 router.get('/users/:userId', mwm(
 	[ums.getUserObj, 'ctx', 'user'], // user object created on demand
 	[payment.getPaymentHistory, 'user', 'payment'], // pass in populated user and a new payment
