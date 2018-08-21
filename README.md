@@ -31,6 +31,8 @@ you are allow to define your route this way with route
 
 ```javascript
 const mwm = require('pico-mw-mgr')
+const ums = require('./ums')
+const payment = require('./payment')
 
 router.get('/users/:userId', mwm(
 	[ums.getUserObj, 'ctx', 'user'], // user object created on demand
