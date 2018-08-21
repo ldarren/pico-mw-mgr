@@ -2,9 +2,9 @@
 A pico sized and zero dependencies middleware manager for Koajs
 
 ## introduction
-have you ever wished you can define the input and output of a koajs middleware?
+have you ever wished that you can define the input and output of a koajs middleware?
 
-have you ever done this? passing values by overloading `ctx`?
+have you ever done this? passing values across middlewares by overloading `ctx`?
 ```javascript
 async function middleware(ctx, next){
 	const input = ctx.input
@@ -19,15 +19,15 @@ async function middleware(ctx, next){
 	await next()
 }
 ```
-and keep your fingers crossed that `input` and `output` are not override by other middleware?
+and keep your fingers crossed that `input` and `output` are not overriding by other middlewares?
 
-this middleware manager is created to solve this problem. it does:
+this middleware manager solve this problem. by:
 - allowed customizable middleware parameters instead of just `ctx` and `next`
 - allowed per route configuration
 - create new paramters on the fly
 
 ## usage
-you are allow to define your route this way with route
+use pico-mw-mgr with koajs-router
 
 ```javascript
 const mwm = require('pico-mw-mgr')
@@ -60,7 +60,7 @@ module.exports = {
 // history.js
 module.exports = {
 	getPaymentHistory: async function(input, output, next){
-		const payments = model.getHistory(input, .userId)
+		const payments = model.getHistory(input.userId)
 		Object.assign(output, {
 			payments
 		})
