@@ -1,11 +1,10 @@
 {
   "name": "pico-mw-mgr",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "pico sized middleware manager for koajs",
   "main": "index.js",
   "scripts": {
-    "start": "node example/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/index.js"
   },
   "author": "Darren Liew",
   "repository": {

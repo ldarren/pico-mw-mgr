@@ -8,13 +8,11 @@ async function pipeline(middlewares, i, data, next){
 	})
 
 	await middleware[0](...params, async err => {
-		if (err) return await next(err)
+		if (err) return data.ctx.throw(err)
 		await pipeline(middlewares, i, data, next)
 	})
 }
 
 module.exports = function(...middlewares){
-	return async function(ctx, next){
-		return await pipeline(middlewares, 0, { ctx }, next)
-	}
+	return (ctx, next) => pipeline(middlewares, 0, { ctx }, next)
 }
