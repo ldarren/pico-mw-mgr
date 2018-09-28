@@ -13,9 +13,9 @@ router.get('/', (ctx, next) => {
 })
 
 router.get('/:userid', mwm(
-	[ums.getUser, 'ctx', 'user'],
-	[inv.getInv, 'ctx', 'user', 'inv'],
-	[inv.output, 'ctx', 'user', 'inv'],
+	[ums.getUser, 'user'],
+	[inv.getInv, 'user', 'inv'],
+	[inv.output, 'user', 'inv'],
 ))
 
 app

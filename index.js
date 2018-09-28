@@ -1,4 +1,4 @@
-async function pipeline(middlewares, i, data, next){
+async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
 
@@ -7,12 +7,12 @@ async function pipeline(middlewares, i, data, next){
 		return data[key]
 	})
 
-	await middleware[0](...params, async err => {
-		if (err) return data.ctx.throw(err)
-		await pipeline(middlewares, i, data, next)
+	await middleware[0](ctx, ...params, async err => {
+		if (err) return ctx.throw(err)
+		await pipeline(ctx, middlewares, i, data, next)
 	})
 }
 
 module.exports = function(...middlewares){
-	return (ctx, next) => pipeline(middlewares, 0, { ctx }, next)
+	return (ctx, next) => pipeline(ctx, middlewares, 0, { }, next)
 }
