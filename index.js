@@ -3,6 +3,7 @@ async function pipeline(ctx, middlewares, i, data, next){
 	if (!middleware) return next()
 
 	const params = middleware.slice(1).map(key => {
+		if (!key || !key.charAt) return key
 		if (!data[key]) data[key] = {}
 		return data[key]
 	})

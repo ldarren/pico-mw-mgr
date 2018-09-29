@@ -7,15 +7,33 @@ const inv = require('./inv');
 const app = new Koa();
 const router = new Router();
 
-router.get('/', (ctx, next) => {
-	ctx.body = 'Hello'
-	next()
-})
+async function combine(ctx, user, inv, output, next){
+	Object.assign(output, {
+		user,
+		inv
+	})
+	await next()
+}
+
+async function output(ctx, data, next){
+	if (!data){
+		ctx.status = 201
+		return next()
+	}
+	ctx.status = 200
+	ctx.body = data
+	await next()
+}
 
 router.get('/:userid', mwm(
 	[ums.getUser, 'user'],
 	[inv.getInv, 'user', 'inv'],
-	[inv.output, 'user', 'inv'],
+	[combine, 'user', 'inv', 'output'],
+	[output, 'output'],
+))
+
+router.get('/', mwm(
+	[output, null]
 ))
 
 app
