@@ -35,20 +35,21 @@ const ums = require('./ums')
 const payment = require('./payment')
 
 router.get('/users/:userId', mwm(
-	[ums.getUserObj, 'ctx', 'user'], // user object created on demand
+	[ums.getUserObj, 'user'], // user object created on demand
 	[payment.getPaymentHistory, 'user', 'payment'], // pass in populated user and a new payment
-	[ums.send, 'ctx', 'user', 'payment']
+	[ums.send, 'user', 'payment']
 ))
 
 // ums.js
 module.exports = {
-	getUserObj: async function(ctx, output, next){
+	// ctx and next are inserted by default
+	async getUserObj(ctx, output, next){
 		Object.assign(output, {
 			userId: ctx.params.userId
 		})
 		await next()
 	},
-	send: async function(ctx, user, payment, next){
+	async send(ctx, user, payment, next){
 		ctx.body = {
 			user,
 			payment
@@ -59,7 +60,7 @@ module.exports = {
 
 // history.js
 module.exports = {
-	getPaymentHistory: async function(input, output, next){
+	async getPaymentHistory(ctx, input, output, next){
 		const payments = model.getHistory(input.userId)
 		Object.assign(output, {
 			payments
@@ -70,7 +71,45 @@ module.exports = {
 ```
 a working example can be found in `/example` folder. run the example by `npm start`
 
+## parameter initialization
+by default when a parameter initialize as pure js object
+```javascript
+router.get('/users/:userId', mwm(
+	[func, 'obj']
+))
+
+function func(ctx, param1, next){
+	// param1 is an object
+}
+```
+`func` middleware will receive an empty js object. there are other data type supported
+
+```javascript
+router.get('/users/:userId', mwm(
+	[func, 'obj', ':arr', '#hello world', 123, null]
+))
+
+function func(ctx, param1, param2, param3, param4, param5, next){
+	// param1 is an object
+	// param2 is an array
+	// param3 is a string and value is 'hello world'
+	// param4 is a number and value is 123
+	// param4 is an object and value is a null
+}
+```
+
 ## installation
 ```
 npm i pico-mw-mgr
+```
+
+### test
+```
+npm test
+```
+
+and make query by
+
+```
+curl localhost:3000/123
 ```

@@ -10,7 +10,7 @@ const router = new Router();
 async function combine(ctx, user, inv, output, next){
 	Object.assign(output, {
 		user,
-		inv
+		inventory: inv
 	})
 	await next()
 }
@@ -26,9 +26,9 @@ async function output(ctx, data, next){
 }
 
 router.get('/:userid', mwm(
-	[ums.getUser, 'user'],
-	[inv.getInv, 'user', 'inv'],
-	[combine, 'user', 'inv', 'output'],
+	[ums.getUser, 'user', '#darren liew'],
+	[inv.getInv, 'user', ':inv', 1111],
+	[combine, 'user', ':inv', 'output'],
 	[output, 'output'],
 ))
 
@@ -40,4 +40,4 @@ app
   .use(router.routes())
   .use(router.allowedMethods());
 
-app.listen(3000, () => console.log('GET localhost:3000/:userid should get {"user":{"userId":":userid"},"inv":{"id":":useridxxx"}}'))
+app.listen(3000, () => console.log('GET localhost:3000/:userid should get {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}'))

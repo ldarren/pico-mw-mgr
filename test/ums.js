@@ -1,7 +1,8 @@
 module.exports = {
-	getUser: async function(ctx, user, next){
+	getUser: async function(ctx, user, name, next){
 		Object.assign(user, {
-			userId: ctx.params.userid
+			userId: ctx.params.userid,
+			name
 		})
 		await next()
 	}
