@@ -1,0 +1,68 @@
+{
+	"env": {
+		"es6": true,
+		"commonjs": true,
+		"node": true
+	},
+	"extends": "eslint:recommended",
+	"parserOptions": {
+		"ecmaVersion": 2018
+	},
+	"globals": {
+		"inherit": false,
+		"__": true,
+		"pico": true,
+		"window": true,
+		"document": true
+	},
+	"rules": {
+		"brace-style": "error",
+        "eqeqeq": [
+			"error",
+			"smart"
+		],
+		"indent": [
+			"error",
+			"tab"
+		],
+		"linebreak-style": [
+			"error",
+			"unix"
+		],
+		"quotes": [
+			"error",
+			"single"
+		],
+		"semi": [
+			"error",
+			"never",
+			{
+				"beforeStatementContinuationChars": "always"
+			}
+		],
+		"no-console": [
+			"warn",
+			{
+				"allow": ["error", "warn"]
+			}
+		],
+		"no-trailing-spaces": [
+			"error",
+			{
+				"ignoreComments": true
+			}
+		],
+		"no-unreachable": "warn",
+		"no-fallthrough": "warn",
+		"no-unused-vars": [
+			"error", {
+			"args": "none",
+			"vars": "all",
+			"ignoreRestSiblings": true,
+			"varsIgnorePattern": "_"
+		}],
+		"no-cond-assign": ["error", "except-parens"],
+		"no-empty": ["error", { "allowEmptyCatch": true }],
+		"no-constant-condition": ["error", { "checkLoops": false }]
+	}
+}

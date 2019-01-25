@@ -1,11 +1,11 @@
-const Koa = require('koa');
-const Router = require('koa-router');
-const mwm = require('../index');
-const ums = require('./ums');
-const inv = require('./inv');
+const Koa = require('koa')
+const Router = require('koa-router')
+const mwm = require('../index')
+const ums = require('./ums')
+const inv = require('./inv')
 
-const app = new Koa();
-const router = new Router();
+const app = new Koa()
+const router = new Router()
 
 async function combine(ctx, user, inv, output, next){
 	Object.assign(output, {
@@ -16,8 +16,8 @@ async function combine(ctx, user, inv, output, next){
 }
 
 async function output(ctx, data, next){
-	if (!data){
-		ctx.status = 201
+	if (!data || !Object.keys(data).length){
+		ctx.status = 204
 		return next()
 	}
 	ctx.status = 200
@@ -25,7 +25,12 @@ async function output(ctx, data, next){
 	await next()
 }
 
-router.get('/:userid', mwm(
+mwm(
+	'warn/user/id',
+	[output, 'warn'],
+)
+
+router.get('/users/:userid', mwm(
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],
 	[combine, 'user', ':inv', 'output'],
@@ -37,7 +42,7 @@ router.get('/', mwm(
 ))
 
 app
-  .use(router.routes())
-  .use(router.allowedMethods());
+	.use(router.routes())
+	.use(router.allowedMethods())
 
-app.listen(3000, () => console.log('GET localhost:3000/:userid should get {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}'))
+app.listen(3000, () => console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}'))

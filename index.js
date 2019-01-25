@@ -1,3 +1,5 @@
+const router = {}
+
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
@@ -21,12 +23,21 @@ async function pipeline(ctx, middlewares, i, data, next){
 		return datakey
 	})
 
-	await middleware[0](ctx, ...params, async err => {
+	await middleware[0](ctx, ...params, async (err, route, newdata) => {
 		if (err) return ctx.throw(err)
+		if (route && router[route]){
+			return await pipeline(ctx, router[route], 0, newdata, next)
+		}
 		await pipeline(ctx, middlewares, i, data, next)
 	})
 }
 
 module.exports = function(...middlewares){
+	const key = middlewares[0]
+	if (!key) return
+	if (!Array.isArray(key)){
+		router[key] = middlewares
+		return middlewares.shift()
+	}
 	return (ctx, next) => pipeline(ctx, middlewares, 0, { }, next)
 }
