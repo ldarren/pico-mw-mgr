@@ -21,13 +21,13 @@ async function middleware(ctx, next){
 ```
 and keep your fingers crossed that `input` and `output` are not overriding by other middlewares?
 
-this middleware manager solve this problem. by:
+pico-mw-mgr solves this problem. by:
 - allowed customizable middleware parameters instead of just `ctx` and `next`
 - allowed per route configuration
 - create new paramters on the fly
 
 ## usage
-use pico-mw-mgr with koajs-router
+use pico-mw-mgr with [koa-router](https://github.com/alexmingoia/koa-router)
 
 ```javascript
 const mwm = require('pico-mw-mgr')
@@ -69,9 +69,9 @@ module.exports = {
 	}
 }
 ```
-a working example can be found in `/example` folder. run the example by `npm start`
+a working example can be found in `/test` folder. run the example by `npm test`
 
-## parameter initialization
+### parameter initialization
 by default when a parameter initialize as pure js object
 ```javascript
 router.get('/users/:userId', mwm(
@@ -98,12 +98,48 @@ function func(ctx, param1, param2, param3, param4, param5, next){
 }
 ```
 
+### route branching
+if a route could end with more than one results (non error). route branching can simplify the route design.
+to create a route branch, mwm first parameter should be a string
+
+```javascript
+mwm(
+	'branch/1',
+	[func1, 'in1', 'in2', 'output'],
+	[func, 'output']
+)
+mwm(
+	'branch/2',
+	[func2, 'in1', 'output'],
+	[func, 'output']
+)
+
+router.get('/users/:userid', mwm(
+	[async (ctx, output, next) => {
+		const userid = parseInt(ctx.params.userid)
+		if(0 < userid){
+			return await next(null, 'branch/1', {
+				in1: 'hello',
+				in2: 'world'
+			})
+		} else if (!userid) {
+			return await next(null, 'branch/2', {
+				in1: 'foobar'
+			})
+		}
+		Object.assign(output, {foo: 'bar'})
+		await next()
+	}, 'output'],
+	[func, 'output']
+))
+```
+
 ## installation
 ```
 npm i pico-mw-mgr
 ```
 
-### test
+## test
 ```
 npm test
 ```
@@ -111,5 +147,17 @@ npm test
 and make query by
 
 ```
-curl localhost:3000/123
+curl localhost:3000/users/123
+```
+
+to see error
+
+```
+curl localhost:3000/users/0
+```
+
+to see warning
+
+```
+curl localhost:3000/users/-123
 ```
