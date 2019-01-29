@@ -30,11 +30,27 @@ mwm(
 	[output, 'warn'],
 )
 
+mwm(
+	'err/user/id',
+	[async (ctx, msg, next) => {
+		Object.assign(msg, {
+			error: 401
+		})
+
+		await next()
+	}],
+)
+
 router.get('/users/:userid', mwm(
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],
 	[combine, 'user', ':inv', 'output'],
 	[output, 'output'],
+))
+
+router.del('/users/:userid', mwm(
+	[ums.delUser, 'msg'],
+	[output, 'msg'],
 ))
 
 router.get('/', mwm(

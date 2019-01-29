@@ -20,5 +20,8 @@ module.exports = {
 		})
 
 		await next()
+	},
+	async delUser(ctx, msg, next){
+		
 	}
 }

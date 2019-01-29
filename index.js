@@ -23,10 +23,10 @@ async function pipeline(ctx, middlewares, i, data, next){
 		return datakey
 	})
 
-	await middleware[0](ctx, ...params, async (err, route, newdata) => {
+	await middleware[0](ctx, ...params, async (err, route, newdata, newnext) => {
 		if (err) return ctx.throw(err)
 		if (route && router[route]){
-			return await pipeline(ctx, router[route], 0, newdata, next)
+			return await pipeline(ctx, router[route], 0, newdata, newnext || next)
 		}
 		await pipeline(ctx, middlewares, i, data, next)
 	})
