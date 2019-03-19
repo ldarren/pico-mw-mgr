@@ -134,6 +134,18 @@ router.get('/users/:userid', mwm(
 ))
 ```
 
+### timed route
+route can be triggered from time as well
+
+```javascript
+mwm(
+	'*/5 * * * * *',
+	[async (ctx, next) => { console.log('tick'); await next();}]
+)
+```
+the above route will be triggered for every 5 minutes
+the timer expression is similar to [CRON expression](https://en.wikipedia.org/wiki/Cron#CRON_expression), special characters `L`, `W`, `#`, `?`, `JAN-DEC` and `SUN-SAT`
+
 ## installation
 ```
 npm i pico-mw-mgr

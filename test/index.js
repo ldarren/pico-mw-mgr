@@ -30,6 +30,14 @@ mwm(
 	[output, 'warn'],
 )
 
+mwm(
+	'* * * * * *',
+	[async (ctx, next) => {
+		console.log('tick', Date.now())
+		await next()
+	}]
+)
+
 router.get('/users/:userid', mwm(
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],

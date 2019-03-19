@@ -1,4 +1,6 @@
+const pTime = require('pico-common').export('pico/time')
 const router = {}
+const timer = {}
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
@@ -32,12 +34,21 @@ async function pipeline(ctx, middlewares, i, data, next){
 	})
 }
 
+async function trigger(ast, middlewares){
+	await pipeline(null, middlewares, 0, { }, err => {
+		if (err) throw err
+	})
+	return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
+}
+
 module.exports = function(...middlewares){
 	const key = middlewares[0]
 	if (!key) return
 	if (!Array.isArray(key)){
-		router[key] = middlewares
-		return middlewares.shift()
+		middlewares.shift()
+		const ast = pTime.parse(key)
+		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
+		return router[key] = middlewares
 	}
 	return (ctx, next) => pipeline(ctx, middlewares, 0, { }, next)
 }
