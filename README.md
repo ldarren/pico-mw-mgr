@@ -135,7 +135,9 @@ router.get('/users/:userid', mwm(
 ```
 
 ### timed route
-route can be triggered from time as well
+route can be triggered from time as well. to create the a timed route, the first item must be a string and the string must comprising six fields sperarated by white space that represent Minutes, Hours, Day of month, MOnth, Day of Week and Year respectively
+
+the timer expression is similar to [CRON expression](https://en.wikipedia.org/wiki/Cron#CRON_expression), without the special characters `L`, `W`, `#`, `?`, `JAN-DEC` and `SUN-SAT` support
 
 ```javascript
 mwm(
@@ -144,7 +146,7 @@ mwm(
 )
 ```
 the above route will be triggered for every 5 minutes
-the timer expression is similar to [CRON expression](https://en.wikipedia.org/wiki/Cron#CRON_expression), special characters `L`, `W`, `#`, `?`, `JAN-DEC` and `SUN-SAT`
+
 
 ## installation
 ```
