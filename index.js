@@ -1,6 +1,5 @@
 const pTime = require('pico-common').export('pico/time')
 const router = {}
-const timer = {}
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]

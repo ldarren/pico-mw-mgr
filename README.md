@@ -1,10 +1,14 @@
 # pico-mw-mgr
-A pico sized and zero dependencies middleware manager for Koajs
+A pico sized middleware manager for Koajs
 
 ## introduction
-have you ever wished that you can define the input and output of a koajs middleware?
+This module help you manage your koajs middlewares
 
-have you ever done this? passing values across middlewares by overloading `ctx`?
+- it makes middleware more reusable,
+- it provides route branching
+- it triggers route by timer
+
+have you ever done this? passing values among middlewares by overloading `ctx`?
 ```javascript
 async function middleware(ctx, next){
 	const input = ctx.input
@@ -27,7 +31,22 @@ pico-mw-mgr solves this problem. by:
 - create new paramters on the fly
 
 ## usage
-use pico-mw-mgr with [koa-router](https://github.com/alexmingoia/koa-router)
+to use pico-mw-mgr, pass the pico-mw-mgri (mwm) function to your router of choice. the mwm function accept a list of array as parameters.
+
+```javascript
+const mwm = require('pico-mw-mgr')
+
+router.get('/test/:test_id', mwm(
+	[ur_mw_1, 'param1'], // param1 is initialize as a js empty object
+	[ur_mw_2, 'param1'], // param1 will be reused here with whatever value is assigned to it in ur_mw_2
+))
+```
+each array in the list is one middleware. the first item in the aaray is the middleware function, subsequence items in the array are the parameters pass into the middleware.
+
+when a paramter is first defined, it will be initialized by pico-mw-mgr.
+
+### reusable middleware
+in this example pico-mw-mgr is used with [koa-router](https://github.com/alexmingoia/koa-router)
 
 ```javascript
 const mwm = require('pico-mw-mgr')
@@ -69,10 +88,12 @@ module.exports = {
 	}
 }
 ```
+this example shown that the paramter of middleware were determined when creating the route, instead of determined at the time of creating the middleware, this make the middleware more reusable.
+
 a working example can be found in `/test` folder. run the example by `npm test`
 
 ### parameter initialization
-by default when a parameter initialize as pure js object
+by default when a parameter initialize as a empty js object
 ```javascript
 router.get('/users/:userId', mwm(
 	[func, 'obj']
@@ -82,7 +103,7 @@ function func(ctx, param1, next){
 	// param1 is an object
 }
 ```
-`func` middleware will receive an empty js object. there are other data type supported
+`func` middleware will receive an empty js object. besides object, pico-mw-mgr also supported other native js data structures
 
 ```javascript
 router.get('/users/:userId', mwm(
@@ -99,8 +120,8 @@ function func(ctx, param1, param2, param3, param4, param5, next){
 ```
 
 ### route branching
-if a route could end with more than one results (non error). route branching can simplify the route design.
-to create a route branch, mwm first parameter should be a string
+if a route has more than one result (excluded error results). the route branching feature can used to simplify the route design.
+to create a route branch, mwm first parameter must be a string
 
 ```javascript
 mwm(
@@ -135,7 +156,7 @@ router.get('/users/:userid', mwm(
 ```
 
 ### timed route
-route can be triggered from time as well. to create the a timed route, the first item must be a string and the string must comprising six fields sperarated by white space that represent Minutes, Hours, Day of month, MOnth, Day of Week and Year respectively
+route can be triggered by timer as well. to create the a timed route, the first item must be a string and the string must comprising six fields sperarated by white space that represent Minutes, Hours, Day of month, MOnth, Day of Week and Year respectively
 
 the timer expression is similar to [CRON expression](https://en.wikipedia.org/wiki/Cron#CRON_expression), without the special characters `L`, `W`, `#`, `?`, `JAN-DEC` and `SUN-SAT` support
 
@@ -158,7 +179,7 @@ npm i pico-mw-mgr
 npm test
 ```
 
-and make query by
+and make a test query by
 
 ```
 curl localhost:3000/users/123
