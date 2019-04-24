@@ -38,7 +38,13 @@ mwm(
 	}]
 )
 
-router.get('/users/:userid', mwm(
+router.get('/users/:userId', mwm(
+	[mwm.validate({
+		userId: {
+			type: 'number',
+			required: 1
+		}
+	}, 'params'), 'user'],
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],
 	[combine, 'user', ':inv', 'output'],

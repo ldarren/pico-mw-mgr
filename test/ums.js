@@ -1,21 +1,18 @@
 module.exports = {
 	async getUser(ctx, user, name, next){
-		const userId = parseInt(ctx.params.userid)
-
-		if (!userId) return await next({
+		if (!user.userId) return await next({
 			status: 401,
-			message: 'invalid userid: ' + userId,
+			message: 'invalid userid: ' + user.userId,
 			code: 1
 		})
 
-		if (0 > userId) return await next(null, 'warn/user/id', {warn:{
+		if (0 > user.userId) return await next(null, 'warn/user/id', {warn:{
 			status: 400,
-			message: `are you getting: ${Math.abs(userId)}?`,
+			message: `are you getting: ${Math.abs(user.userId)}?`,
 			code: 2
 		}})
 
 		Object.assign(user, {
-			userId,
 			name
 		})
 

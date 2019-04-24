@@ -1,7 +1,6 @@
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
 const router = {}
-const BOOLS = [true, false, 1, 0]
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
@@ -56,14 +55,14 @@ function mwm(...middlewares){
 
 mwm.validate = (spec, source = 'body') => {
 	return (ctx, output, next) => {
-		const found = pObj.validate(spec, ctx[source])
+		const found = pObj.validate(spec, ctx[source], output)
 		if (found) return next(`invalid params [${found}]`)
 		return next()
 	}
 }
 
 mwm.pluck = (ctx, arr, idx, obj, next) => {
-	if (idx >= arr.length) return next(`index exceeded array length`)
+	if (idx >= arr.length) return next('index exceeded array length')
 	Object.assign(obj, arr[idx])
 	return next()
 }
