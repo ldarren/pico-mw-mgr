@@ -26,7 +26,10 @@ async function pipeline(ctx, middlewares, i, data, next){
 	})
 
 	await middleware[0](ctx, ...params, async (err, route, newdata) => {
-		if (err) return ctx.throw(err)
+		if (err) {
+			if (ctx) return ctx.throw(err)
+			throw err
+		}
 		if (route && router[route]){
 			return await pipeline(ctx, router[route], 0, newdata, next)
 		}
@@ -35,10 +38,10 @@ async function pipeline(ctx, middlewares, i, data, next){
 }
 
 async function trigger(ast, middlewares){
+	setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
 	await pipeline(null, middlewares, 0, { }, err => {
 		if (err) throw err
 	})
-	return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
 }
 
 function mwm(...middlewares){
@@ -55,6 +58,7 @@ function mwm(...middlewares){
 
 mwm.validate = (spec, source = 'body') => {
 	return (ctx, output, next) => {
+		const obj = source === 'body' ? ctx.request.body : ctx.params
 		const found = pObj.validate(spec, ctx[source], output)
 		if (found) return next(`invalid params [${found}]`)
 		return next()
