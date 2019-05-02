@@ -58,8 +58,8 @@ function mwm(...middlewares){
 
 mwm.validate = (spec, source = 'body') => {
 	return (ctx, output, next) => {
-		const obj = source === 'body' ? ctx.request.body : ctx.params
-		const found = pObj.validate(spec, ctx[source], output)
+		const obj = (source === 'body' ? ctx.request.body : ctx.params)
+		const found = pObj.validate(spec, obj, output)
 		if (found) return next(`invalid params [${found}]`)
 		return next()
 	}
