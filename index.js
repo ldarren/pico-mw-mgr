@@ -65,6 +65,13 @@ mwm.validate = (spec, source = 'body') => {
 	}
 }
 
+mwm.dot = (ctx, input, params, def, output, next) => {
+	const ret = pObj.dot(input, params, def)
+	if (!ret) return next(`invalid params [${params}]`)
+	Object.assign(output, ret)
+	return next()
+}
+
 mwm.pluck = (ctx, arr, idx, obj, next) => {
 	if (idx >= arr.length) return next('index exceeded array length')
 	Object.assign(obj, arr[idx])
