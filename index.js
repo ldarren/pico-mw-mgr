@@ -73,7 +73,7 @@ mwm.dot = (ctx, input, params, def, output, next) => {
 }
 
 mwm.pluck = (ctx, arr, idx, obj, next) => {
-	if (idx >= arr.length) return next('index exceeded array length')
+	if (idx >= arr.length) return next()
 	Object.assign(obj, arr[idx])
 	return next()
 }
