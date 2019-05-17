@@ -1,5 +1,6 @@
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
+const dummyNext = () => {}
 const router = {}
 
 async function pipeline(ctx, middlewares, i, data, next){
@@ -63,6 +64,12 @@ mwm.validate = (spec, source = 'body') => {
 		if (found) return next(`invalid params [${found}]`)
 		return next()
 	}
+}
+
+mwm.branch = (ctx, route, newdata, next = dummyNext) => {
+	const middlewares = router[route]
+	if (!middlewares) throw `route[${route}] not found`
+	return pipeline(ctx, middlewares, 0, newdata, next)
 }
 
 mwm.dot = (ctx, input, params, def, output, next) => {

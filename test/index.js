@@ -31,9 +31,22 @@ mwm(
 )
 
 mwm(
+	'print',
+	[(ctx, output, next) => {
+		console.log(output); return next()
+	}, 'output']
+)
+
+mwm(
 	'* * * * * *',
 	[async (ctx, next) => {
 		console.log('tick', Date.now())
+
+		const prints = []
+		for (let i = 0; i < 2; i++){
+			prints.push(mwm.branch(ctx, 'print', {output: {data: i}}))
+		}
+		await Promise.all(prints)
 		await next()
 	}]
 )
