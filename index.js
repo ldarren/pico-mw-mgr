@@ -73,7 +73,7 @@ mwm.branch = (ctx, route, newdata, next = dummyNext) => {
 }
 
 mwm.dot = (ctx, input, params, def, output, next) => {
-	const ret = pObj.dot(input, params, def)
+	const ret = pObj.dot(input, params.slice(), def)
 	if (!ret) return next(`invalid params [${params}]`)
 	Object.assign(output, ret)
 	return next()
