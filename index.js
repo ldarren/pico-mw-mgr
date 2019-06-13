@@ -1,11 +1,22 @@
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
+const metric = require('./metric')
 const dummyNext = () => {}
+function dummyCtx(path) {
+	return {
+		method: 'JMP',
+		path,
+	}
+}
 const router = {}
+
+metric.start()
+const hist = metric.createHistogram('latency', 'measure api latency')
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
+	const end = metric.startTimer(hist, ctx.method, ctx.path, middleware[0].name)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
@@ -31,6 +42,7 @@ async function pipeline(ctx, middlewares, i, data, next){
 			if (ctx) return ctx.throw(err)
 			throw err
 		}
+		end()
 		if (route && router[route]){
 			return await pipeline(ctx, router[route], 0, newdata, next)
 		}
@@ -54,7 +66,7 @@ function mwm(...middlewares){
 		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
 		return router[key] = middlewares
 	}
-	return (ctx, next) => pipeline(ctx, middlewares, 0, { }, next)
+	return (ctx = dummyCtx(key), next) => pipeline(ctx, middlewares, 0, { }, next)
 }
 
 mwm.validate = (spec, source = 'body') => {
