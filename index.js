@@ -16,7 +16,7 @@ const hist = metric.createHistogram('latency', 'measure api latency')
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
-	const end = metric.startTimer(hist, ctx.method, ctx.path, middleware[0].name)
+	const end = metric.startTimer(hist, ctx.method, ctx.path, middleware[0].namei + '@' + i)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
