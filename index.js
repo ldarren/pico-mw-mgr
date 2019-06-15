@@ -16,7 +16,7 @@ const hist = metric.createHistogram('latency', 'measure api latency')
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
-	const end = metric.startTimer(hist, ctx.method, ctx.path, middleware[0].namei + '@' + i)
+	const end = metric.startTimer(hist, ctx.method, ctx.path, middleware[0].name + '@' + i)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
@@ -50,9 +50,9 @@ async function pipeline(ctx, middlewares, i, data, next){
 	})
 }
 
-async function trigger(ast, middlewares){
-	setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
-	await pipeline(null, middlewares, 0, { }, err => {
+async function trigger(ctx, ast, middlewares){
+	setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ctx, ast, middlewares)
+	await pipeline(ctx, middlewares, 0, { }, err => {
 		if (err) throw err
 	})
 }
@@ -63,7 +63,7 @@ function mwm(...middlewares){
 	if (!Array.isArray(key)){
 		middlewares.shift()
 		const ast = pTime.parse(key)
-		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
+		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), dummyCtx(key), ast, middlewares)
 		return router[key] = middlewares
 	}
 	return (ctx = dummyCtx(key), next) => pipeline(ctx, middlewares, 0, { }, next)
@@ -108,6 +108,11 @@ mwm.dot = (ctx, input, params, def, output, next) => {
 mwm.pluck = (ctx, arr, idx, obj, next) => {
 	if (idx >= arr.length) return next()
 	Object.assign(obj, arr[idx])
+	return next()
+}
+
+mwm.metrics = (ctx, output, next) => {
+	Object.assign(output, metric.output())
 	return next()
 }
 
