@@ -4,7 +4,13 @@
 
 const prom = require('prom-client')
 let interval
-const metrics = {}
+
+const mw_metric = new prom.Histogram({
+	name: 'mwm_mw',
+	help: 'http response time (second) breakdown by middlewares',
+	labelNames: ['method', 'route', 'path', 'mw', 'state'],
+	buckets: [0.1, 0.3, 1, 10, 60]
+})
 
 module.exports = {
 	start(){
@@ -16,32 +22,23 @@ module.exports = {
 		prom.register.clear()
 	},
 
-	createHistogram(name, help){
-		return new prom.Histogram({
-			name,
-			help,
-			labelNames: ['method', 'route', 'path', 'mw', 'state']
-		})
+	timer(method, route, path, mw){
+		return mw_metric.startTimer({method, route, path, mw})
 	},
 
-	startTimer(metric, method, route, path, mw){
-		if (!metric) throw 'invalid metric'
-		return metric.startTimer({method, route, path, mw})
-	},
-
-	observe(metric, method, route, path, mw, state, time){
-		metric.labels(method, route, path, mw, state).observe(time/1000)
+	observe(method, route, path, mw, state, time){
+		mw_metric.labels(method, route, path, mw, state).observe(time)
 	},
 
 	contentType(){
 		return prom.register.contentType
 	},
 
+	output(){
+		return prom.register.metrics()
+	},
+
 	outputJSON(){
 		return prom.register.getMetricsAsJSON()
 	},
-
-	output(){
-		return prom.register.metrics()
-	}
 }

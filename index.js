@@ -6,12 +6,11 @@ const dummyCtx = path => ({ method: 'JMP', path, route: path, _matchedRoute: pat
 const router = {}
 
 metric.start()
-const hist = metric.createHistogram('pico_apm', 'api performance monitoring')
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
-	const end = metric.startTimer(hist, ctx.method, ctx._matchedRoute, ctx.path, `${i}:${middleware[0].name || '\u03BB'}`)
+	const end = metric.timer(ctx.method, ctx._matchedRoute, ctx.path, `${i}:${middleware[0].name || '\u03BB'}`)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
