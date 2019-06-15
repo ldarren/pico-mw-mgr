@@ -168,6 +168,11 @@ mwm(
 ```
 the above route will be triggered for every 5 minutes
 
+### APM
+pico-mw-mgr is integrated with prometheus. metrics can be obtained by reading `mwm.output()`
+do following steps to display pico-mw-mgr metrics on grafana
+
+
 
 ## installation
 ```

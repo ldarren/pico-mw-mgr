@@ -29,11 +29,19 @@ module.exports = {
 		return metric.startTimer({method, route, path, mw})
 	},
 
+	observe(metric, method, route, path, mw, state, time){
+		metric.labels(method, route, path, mw, state).observe(time/1000)
+	},
+
 	contentType(){
 		return prom.register.contentType
 	},
 
-	output(){
+	outputJSON(){
 		return prom.register.getMetricsAsJSON()
+	},
+
+	output(){
+		return prom.register.metrics()
 	}
 }
