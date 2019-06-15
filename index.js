@@ -2,21 +2,16 @@ const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
 const metric = require('./metric')
 const dummyNext = () => {}
-function dummyCtx(path) {
-	return {
-		method: 'JMP',
-		path,
-	}
-}
+const dummyCtx = path => ({ method: 'JMP', path, route: path, _matchedRoute: path })
 const router = {}
 
 metric.start()
-const hist = metric.createHistogram('latency', 'measure api latency')
+const hist = metric.createHistogram('pico_apm', 'api performance monitoring')
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
-	const end = metric.startTimer(hist, ctx.method, ctx.path, middleware[0].name + '@' + i)
+	const end = metric.startTimer(hist, ctx.method, ctx._matchedRoute, ctx.path, middleware[0].name + '@' + i)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
@@ -39,11 +34,13 @@ async function pipeline(ctx, middlewares, i, data, next){
 
 	await middleware[0](ctx, ...params, async (err, route, newdata) => {
 		if (err) {
+			end({state: err.status || 400})
 			if (ctx) return ctx.throw(err)
 			throw err
 		}
-		end()
+		end({state: 200})
 		if (route && router[route]){
+			ctx._matchedRoute = route
 			return await pipeline(ctx, router[route], 0, newdata, next)
 		}
 		await pipeline(ctx, middlewares, i, data, next)
@@ -81,6 +78,7 @@ mwm.validate = (spec, source = 'body') => {
 mwm.branch = (ctx, route, newdata, next = dummyNext) => {
 	const middlewares = router[route]
 	if (!middlewares) throw `route[${route}] not found`
+	ctx._matchedRoute = route
 	return pipeline(ctx, middlewares, 0, newdata, next)
 }
 

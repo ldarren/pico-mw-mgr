@@ -20,13 +20,13 @@ module.exports = {
 		return new prom.Histogram({
 			name,
 			help,
-			labelNames: ['method', 'path', 'mw']
+			labelNames: ['method', 'route', 'path', 'mw', 'state']
 		})
 	},
 
-	startTimer(metric, method, path, mw){
-		if (!metric) throw 'invalid metric name: ' + metric.name
-		return metric.startTimer({method, path, mw})
+	startTimer(metric, method, route, path, mw){
+		if (!metric) throw 'invalid metric'
+		return metric.startTimer({method, route, path, mw})
 	},
 
 	contentType(){
