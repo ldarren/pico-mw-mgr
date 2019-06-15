@@ -7,22 +7,23 @@ const inv = require('./inv')
 const app = new Koa()
 const router = new Router()
 
-async function combine(ctx, user, inv, output, next){
+function combine(ctx, user, inv, output, next){
 	Object.assign(output, {
 		user,
 		inventory: inv
 	})
-	await next()
+	return next()
 }
 
-async function output(ctx, data, next){
+function output(ctx, data, next){
 	if (!data || !Object.keys(data).length){
 		ctx.status = 204
+		ctx.body = data
 		return next()
 	}
 	ctx.status = 200
 	ctx.body = data
-	await next()
+	return next()
 }
 
 mwm(
@@ -33,7 +34,8 @@ mwm(
 mwm(
 	'print',
 	[(ctx, output, next) => {
-		console.log(output); return next()
+		console.log(output)
+		return next()
 	}, 'output']
 )
 
@@ -47,7 +49,7 @@ mwm(
 			prints.push(mwm.branch(ctx, 'print', {output: {data: i}}))
 		}
 		await Promise.all(prints)
-		await next()
+		return next()
 	}]
 )
 
@@ -68,8 +70,13 @@ router.get('/', mwm(
 	[output, null]
 ))
 
+router.get('/metrics', mwm(
+	[mwm.metrics, 'output'],
+	[output, 'output']
+))
+
 app
 	.use(router.routes())
 	.use(router.allowedMethods())
 
-app.listen(3000, () => console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}'))
+app.listen(1337, () => console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}'))

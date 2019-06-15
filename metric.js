@@ -25,12 +25,15 @@ module.exports = {
 	},
 
 	startTimer(metric, method, path, mw){
-		if (!metric) throw 'invalid metric name: ' + name
-		return metric.startTime({name, method, path, mw})
+		if (!metric) throw 'invalid metric name: ' + metric.name
+		return metric.startTimer({method, path, mw})
 	},
 
-	output(res){
-		res.set('Content-Type', prom.register.contentType);
-		res.end(prom.register.metrics());
+	contentType(){
+		return prom.register.contentType
+	},
+
+	output(){
+		return prom.register.getMetricsAsJSON()
 	}
 }
