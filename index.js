@@ -11,7 +11,7 @@ const hist = metric.createHistogram('pico_apm', 'api performance monitoring')
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
-	const end = metric.startTimer(hist, ctx.method, ctx._matchedRoute, ctx.path, middleware[0].name + '@' + i)
+	const end = metric.startTimer(hist, ctx.method, ctx._matchedRoute, ctx.path, `${i}:${middleware[0].name || '\u03BB'}`)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
@@ -95,8 +95,10 @@ mwm.pluck = (ctx, arr, idx, obj, next) => {
 	return next()
 }
 
-mwm.metrics = (ctx, output, next) => {
-	Object.assign(output, metric.output())
+mwm.metrics = (ctx, next) => {
+	ctx.status = 200
+	ctx.response.set('Content-Type', metric.contentType())
+	ctx.body = metric.output()
 	return next()
 }
 

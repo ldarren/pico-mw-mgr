@@ -1,0 +1,18 @@
+global:  
+  scrape_interval: 1m
+  scrape_timeout: 10s
+  evaluation_interval: 1m
+rule_files:  
+- /etc/prometheus/alert.rules
+scrape_configs:  
+- job_name: pico-mw-mgr-job
+  scrape_interval: 5s
+  scrape_timeout: 5s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - host.docker.internal:1337
+    labels:
+      app: pico-mw-mgr
+      sandbox: pico-mw-mgr-sandbox

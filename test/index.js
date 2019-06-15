@@ -71,8 +71,7 @@ router.get('/', mwm(
 ))
 
 router.get('/metrics', mwm(
-	[mwm.metrics, 'output'],
-	[output, 'output']
+	[mwm.metrics],
 ))
 
 app
