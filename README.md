@@ -169,8 +169,9 @@ mwm(
 the above route will be triggered for every 5 minutes
 
 ### Prometheus Integration
-pico-mw-mgr can export promethues metric by default
-follow the following steps illustrated the easiest way to view the prometheus metrics on Grafana
+pico-mw-mgr output promethues metric by default.
+
+the following steps illustrated the easiest way to view the pico-mw-mgr metrics on Grafana
 - create a `GET /metrics` route in your app
 - install grafana docker `docker run -d -p 3000:3000 grafana/grafana`
 - install prometheus docker `docker run -p 9090:9090 -v <path>/pico-mw-mgr/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus`
