@@ -177,7 +177,7 @@ follow the following steps illustrated the easiest way to view the prometheus me
 - open grafana `http://localhost:3000`
 - add promethues data source (url=`http://localhost:9090`, Access=`Browser`)
 - create a new dashboard and add a new panel
-- edit panel and enter `sum(mwm_mw_sum{method="GET", route="/users/:userId", state="200"}) by (mw)` in query
+- edit panel and enter `sum(mwm_mw_sum{method="GET", route="/users/:userId", state="200"}/mwm_mw_count{method="GET", route="/users/:userId", state="200"}) by (mw)`
 - edit panel and use `stack` in panel settings
 
 ## installation
