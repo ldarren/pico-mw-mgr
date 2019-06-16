@@ -168,6 +168,18 @@ mwm(
 ```
 the above route will be triggered for every 5 minutes
 
+### Prometheus Integration
+pico-mw-mgr output promethues metric by default.
+
+the following steps illustrated the easiest way to view the pico-mw-mgr metrics on Grafana
+- create a `GET /metrics` route in your app
+- install grafana docker `docker run -d -p 3000:3000 grafana/grafana`
+- install prometheus docker `docker run -p 9090:9090 -v <path>/pico-mw-mgr/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus`
+- open grafana `http://localhost:3000`
+- add promethues data source (url=`http://localhost:9090`, Access=`Browser`)
+- create a new dashboard and add a new panel
+- edit panel and enter `sum(mwm_mw_sum{method="GET", route="/users/:userId", state="200"}/mwm_mw_count{method="GET", route="/users/:userId", state="200"}) by (mw)`
+- edit panel and use `stack` in panel settings
 
 ## installation
 ```

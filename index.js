@@ -1,11 +1,16 @@
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
+const metric = require('./metric')
 const dummyNext = () => {}
+const dummyCtx = path => ({ method: 'JMP', path, route: path, _matchedRoute: path })
 const router = {}
+
+metric.start()
 
 async function pipeline(ctx, middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
+	const end = metric.timer(ctx.method, ctx._matchedRoute, ctx.path, `${i}:${middleware[0].name || '\u03BB'}`)
 
 	const params = middleware.slice(1).map(key => {
 		if (!key || !key.charAt) return key
@@ -28,19 +33,22 @@ async function pipeline(ctx, middlewares, i, data, next){
 
 	await middleware[0](ctx, ...params, async (err, route, newdata) => {
 		if (err) {
+			end({state: err.status || 400})
 			if (ctx) return ctx.throw(err)
 			throw err
 		}
+		end({state: 200})
 		if (route && router[route]){
+			ctx._matchedRoute = route
 			return await pipeline(ctx, router[route], 0, newdata, next)
 		}
 		await pipeline(ctx, middlewares, i, data, next)
 	})
 }
 
-async function trigger(ast, middlewares){
-	setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
-	await pipeline(null, middlewares, 0, { }, err => {
+async function trigger(ctx, ast, middlewares){
+	setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ctx, ast, middlewares)
+	await pipeline(ctx, middlewares, 0, { }, err => {
 		if (err) throw err
 	})
 }
@@ -51,10 +59,10 @@ function mwm(...middlewares){
 	if (!Array.isArray(key)){
 		middlewares.shift()
 		const ast = pTime.parse(key)
-		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
+		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), dummyCtx(key), ast, middlewares)
 		return router[key] = middlewares
 	}
-	return (ctx, next) => pipeline(ctx, middlewares, 0, { }, next)
+	return (ctx = dummyCtx(key), next) => pipeline(ctx, middlewares, 0, { }, next)
 }
 
 mwm.validate = (spec, source = 'body') => {
@@ -69,6 +77,7 @@ mwm.validate = (spec, source = 'body') => {
 mwm.branch = (ctx, route, newdata, next = dummyNext) => {
 	const middlewares = router[route]
 	if (!middlewares) throw `route[${route}] not found`
+	ctx._matchedRoute = route
 	return pipeline(ctx, middlewares, 0, newdata, next)
 }
 
@@ -82,6 +91,13 @@ mwm.dot = (ctx, input, params, def, output, next) => {
 mwm.pluck = (ctx, arr, idx, obj, next) => {
 	if (idx >= arr.length) return next()
 	Object.assign(obj, arr[idx])
+	return next()
+}
+
+mwm.metrics = (ctx, next) => {
+	ctx.status = 200
+	ctx.response.set('Content-Type', metric.contentType())
+	ctx.body = metric.output()
 	return next()
 }
 
