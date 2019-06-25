@@ -64,6 +64,22 @@ router.get('/users/:userId', mwm(
 	[output, 'output'],
 ))
 
+router.get('/qs', mwm(
+	[mwm.validate({
+		string0: 'string',
+		'array0[]': 'array',
+		string1: {
+			type: 'string',
+			required: 1
+		},
+		array1: {
+			type: 'array',
+			required: 1
+		}
+	}, 'query'), 'input'],
+	[output, 'input'],
+))
+
 router.get('/', mwm(
 	[output, null]
 ))
