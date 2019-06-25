@@ -26,6 +26,11 @@ function output(ctx, data, next){
 	return next()
 }
 
+let debug = () => {}
+if (process.env.DEBUG){
+	debug = console.log
+}
+
 mwm(
 	'warn/user/id',
 	[output, 'warn'],
@@ -34,7 +39,7 @@ mwm(
 mwm(
 	'print',
 	[(ctx, output, next) => {
-		console.log(output)
+		debug(output)
 		return next()
 	}, 'output']
 )
@@ -42,7 +47,7 @@ mwm(
 mwm(
 	'* * * * * *',
 	[async (ctx, next) => {
-		console.log('tick', Date.now())
+		debug('tick', Date.now())
 
 		const prints = []
 		for (let i = 0; i < 2; i++){
