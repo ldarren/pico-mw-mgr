@@ -80,6 +80,17 @@ router.get('/qs', mwm(
 	[output, 'input'],
 ))
 
+router.get('/header', mwm(
+	[mwm.validate({
+		key0: 'string',
+		key1: {
+			type: 'string',
+			required: 1
+		},
+	}, 'headers'), 'input'],
+	[output, 'input'],
+))
+
 router.get('/', mwm(
 	[output, null]
 ))
@@ -88,4 +99,8 @@ app
 	.use(router.routes())
 	.use(router.allowedMethods())
 
-app.listen(3000, () => console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}'))
+app.listen(3000, () => {
+	console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}')
+	console.info('GET localhost:3000/qs?s1=hello&s2=world=a0[]=foo&a0[]=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
+	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"')
+})

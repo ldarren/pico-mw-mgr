@@ -70,8 +70,10 @@ mwm.validate = (spec, source = 'body') => {
 		case 'query':
 			obj = ctx.request.query
 			break
+		case 'headers':
+			obj = ctx.request.headers
+			break
 		}
-		console.log(obj)
 		const found = pObj.validate(spec, obj, output)
 		if (found) return next(`invalid params [${found}]`)
 		return next()

@@ -1,6 +1,6 @@
 {
   "name": "pico-mw-mgr",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "pico sized middleware manager for koajs",
   "main": "index.js",
   "scripts": {
