@@ -7,7 +7,7 @@ const inv = require('./inv')
 const app = new Koa()
 const router = new Router()
 
-async function combine(ctx, user, inv, output, next){
+async function combine(user, inv, output, next){
 	Object.assign(output, {
 		user,
 		inventory: inv
@@ -32,19 +32,19 @@ mwm(
 
 mwm(
 	'print',
-	[(ctx, output, next) => {
+	[(output, next) => {
 		console.log(output); return next()
 	}, 'output']
 )
 
 mwm(
 	'* * * * * *',
-	[async (ctx, next) => {
+	[async (next) => {
 		console.log('tick', Date.now())
 
 		const prints = []
 		for (let i = 0; i < 2; i++){
-			prints.push(mwm.branch(ctx, 'print', {output: {data: i}}))
+			prints.push(mwm.branch('print', {output: {data: i}}))
 		}
 		await Promise.all(prints)
 		await next()

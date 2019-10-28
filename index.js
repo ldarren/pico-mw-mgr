@@ -1,9 +1,10 @@
+const picosUtil = require('picos-util')
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
 const dummyNext = () => {}
 const router = {}
 
-async function pipeline(ctx, middlewares, i, data, next){
+async function pipeline(middlewares, i, data, next){
 	const middleware = middlewares[i++]
 	if (!middleware) return next()
 
@@ -26,21 +27,21 @@ async function pipeline(ctx, middlewares, i, data, next){
 		return datakey
 	})
 
-	await middleware[0](ctx, ...params, async (err, route, newdata) => {
+	await middleware[0](...params, async (err, route, newdata) => {
 		if (err) {
-			if (ctx) return ctx.throw(err)
+			if (data && data.ctx) return data.ctx.throw(err)
 			throw err
 		}
 		if (route && router[route]){
-			return await pipeline(ctx, router[route], 0, newdata, next)
+			return await pipeline(router[route], 0, newdata, next)
 		}
-		await pipeline(ctx, middlewares, i, data, next)
+		await pipeline(middlewares, i, data, next)
 	})
 }
 
 async function trigger(ast, middlewares){
 	setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
-	await pipeline(null, middlewares, 0, { }, err => {
+	await pipeline(middlewares, 0, { }, err => {
 		if (err) throw err
 	})
 }
@@ -54,7 +55,13 @@ function mwm(...middlewares){
 		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
 		return router[key] = middlewares
 	}
-	return (ctx, next) => pipeline(ctx, middlewares, 0, { }, next)
+	return (ctx, next) => pipeline(middlewares, 0, {ctx}, next)
+}
+
+mwm.log = (...args) => {
+    const len = args.length
+    console.log(args.slice(0, len - 2))
+    args[len - 1]()
 }
 
 mwm.validate = (spec, source = 'body') => {
@@ -80,23 +87,34 @@ mwm.validate = (spec, source = 'body') => {
 	}
 }
 
-mwm.branch = (ctx, route, newdata, next = dummyNext) => {
+mwm.branch = (route, newdata, next = dummyNext) => {
 	const middlewares = router[route]
 	if (!middlewares) throw `route[${route}] not found`
-	return pipeline(ctx, middlewares, 0, newdata, next)
+	return pipeline(middlewares, 0, newdata, next)
 }
 
-mwm.dot = (ctx, input, params, def, output, next) => {
+mwm.dot = (input, params, def, output, next) => {
 	const ret = pObj.dot(input, params.slice(), def)
 	if (!ret) return next(`invalid params [${params}]`)
 	Object.assign(output, ret)
 	return next()
 }
 
-mwm.pluck = (ctx, arr, idx, obj, next) => {
+mwm.pluck = (arr, idx, obj, next) => {
 	if (idx >= arr.length) return next()
 	Object.assign(obj, arr[idx])
 	return next()
+}
+
+mwm.ajax = (method, href) => {
+    return (params, opt, output, next) => {
+        picosUtil.ajax(method, href, params, opt, (err, state, res) => {
+            if (4 !== state) return
+            if (err) return next(err)
+            Object.assign(output, res)
+            return next()
+        })
+    }
 }
 
 module.exports = mwm
