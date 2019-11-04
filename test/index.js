@@ -27,7 +27,7 @@ async function output(ctx, data, next){
 
 mwm(
 	'warn/user/id',
-	[output, 'warn'],
+	[output, 'ctx', 'warn'],
 )
 
 mwm(
@@ -53,46 +53,60 @@ mwm(
 
 router.get('/users/:userId', mwm(
 	[mwm.validate({
-		userId: {
-			type: 'number',
-			required: 1
+		type: 'object',
+		required: 1,
+		spec: {
+			userId: {
+				type: 'number',
+				required: 1
+			}
 		}
-	}, 'params'), 'user'],
+	}, 'params'), 'ctx', 'user'],
 	[ums.getUser, 'user', '#darren liew'],
+	[mwm.ajax('GET', 'https://httpbin.org/anything/:userId'), 'user', 'output'],
+	[mwm.log, 'output'],
 	[inv.getInv, 'user', ':inv', 1111],
 	[combine, 'user', ':inv', 'output'],
-	[output, 'output'],
+	[output, 'ctx', 'output'],
 ))
 
 router.get('/qs', mwm(
 	[mwm.validate({
-		string0: 'string',
-		'array0[]': 'array',
-		string1: {
-			type: 'string',
-			required: 1
-		},
-		array1: {
-			type: 'array',
-			required: 1
+		type: 'object',
+		required: 1,
+		spec: {
+			s0: 'string',
+			'a0': 'array',
+			s1: {
+				type: 'string',
+				required: 1
+			},
+			'a1': {
+				type: 'array',
+				required: 1
+			}
 		}
-	}, 'query'), 'input'],
-	[output, 'input'],
+	}, 'query'), 'ctx', 'input'],
+	[output, 'ctx', 'input'],
 ))
 
 router.get('/header', mwm(
 	[mwm.validate({
-		key0: 'string',
-		key1: {
-			type: 'string',
-			required: 1
-		},
-	}, 'headers'), 'input'],
-	[output, 'input'],
+		type: 'object',
+		required: 1,
+		spec: {
+			key0: 'string',
+			key1: {
+				type: 'string',
+				required: 1
+			},
+		}
+	}, 'headers'), 'ctx', 'input'],
+	[output, 'ctx', 'input'],
 ))
 
 router.get('/', mwm(
-	[output, null]
+	[output, 'ctx', null]
 ))
 
 app
@@ -101,6 +115,6 @@ app
 
 app.listen(3000, () => {
 	console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}')
-	console.info('GET localhost:3000/qs?s1=hello&s2=world=a0[]=foo&a0[]=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
+	console.info('GET localhost:3000/qs?s1=hello&s2=world&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
 	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"')
 })

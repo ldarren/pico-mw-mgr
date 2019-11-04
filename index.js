@@ -1,8 +1,10 @@
 const picosUtil = require('picos-util')
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
+const pStr = require('pico-common').export('pico/str')
 const dummyNext = () => {}
 const router = {}
+const rest = []
 
 async function pipeline(middlewares, i, data, next){
 	const middleware = middlewares[i++]
@@ -59,9 +61,9 @@ function mwm(...middlewares){
 }
 
 mwm.log = (...args) => {
-    const len = args.length
-    console.log(args.slice(0, len - 2))
-    args[len - 1]()
+	const len = args.length
+	args.slice(0, len - 1).forEach(a => console.log(a))
+	args[len - 1]()
 }
 
 mwm.validate = (spec, source = 'body') => {
@@ -75,7 +77,7 @@ mwm.validate = (spec, source = 'body') => {
 			obj = ctx.params
 			break
 		case 'query':
-			obj = ctx.request.query
+			obj = Object.assign({}, ctx.request.query)
 			break
 		case 'headers':
 			obj = ctx.request.headers
@@ -100,21 +102,27 @@ mwm.dot = (input, params, def, output, next) => {
 	return next()
 }
 
-mwm.pluck = (arr, idx, obj, next) => {
-	if (idx >= arr.length) return next()
-	Object.assign(obj, arr[idx])
-	return next()
-}
-
-mwm.ajax = (method, href) => {
-    return (params, opt, output, next) => {
-        picosUtil.ajax(method, href, params, opt, (err, state, res) => {
-            if (4 !== state) return
-            if (err) return next(err)
-            Object.assign(output, res)
-            return next()
-        })
-    }
+mwm.ajax = (method, href, opt) => {
+	pStr.compileRest(href, rest)
+	return (params, output, next) => {
+		return new Promise((resolve, reject) => {
+			picosUtil.ajax(method, pStr.buildRest(href, rest, params), params, opt, (err, state, res) => {
+				if (4 !== state) return
+				if (err) {
+					reject(err)
+					return next(err)
+				}
+				try {
+					Object.assign(output, JSON.parse(res))
+					resolve()
+				}catch (exp){
+					reject(exp)
+					return next(exp)
+				}
+				return next()
+			})
+		})
+	}
 }
 
 module.exports = mwm
