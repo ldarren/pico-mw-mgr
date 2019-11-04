@@ -104,9 +104,9 @@ mwm.dot = (input, params, def, output, next) => {
 
 mwm.ajax = (method, href, opt) => {
 	pStr.compileRest(href, rest)
-	return (params, output, next) => {
+	return (params, body, output, next) => {
 		return new Promise((resolve, reject) => {
-			picosUtil.ajax(method, pStr.buildRest(href, rest, params), params, opt, (err, state, res) => {
+			picosUtil.ajax(method, pStr.buildRest(href, rest, params), body, opt, (err, state, res) => {
 				if (4 !== state) return
 				if (err) {
 					reject(err)

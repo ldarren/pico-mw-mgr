@@ -7,10 +7,11 @@ const inv = require('./inv')
 const app = new Koa()
 const router = new Router()
 
-async function combine(user, inv, output, next){
+async function combine(user, inv, bin, output, next){
 	Object.assign(output, {
 		user,
-		inventory: inv
+		inventory: inv,
+		bin
 	})
 	await next()
 }
@@ -32,9 +33,7 @@ mwm(
 
 mwm(
 	'print',
-	[(output, next) => {
-		console.log(output); return next()
-	}, 'output']
+	[mwm.log, 'output'],
 )
 
 mwm(
@@ -63,10 +62,10 @@ router.get('/users/:userId', mwm(
 		}
 	}, 'params'), 'ctx', 'user'],
 	[ums.getUser, 'user', '#darren liew'],
-	[mwm.ajax('GET', 'https://httpbin.org/anything/:userId'), 'user', 'output'],
-	[mwm.log, 'output'],
 	[inv.getInv, 'user', ':inv', 1111],
-	[combine, 'user', ':inv', 'output'],
+	[mwm.ajax('GET', 'https://httpbin.org/anything/%userId'), 'user', ':inv', 'bin'],
+	[mwm.log, 'user', ':inv', 'bin'],
+	[combine, 'user', ':inv', 'bin', 'output'],
 	[output, 'ctx', 'output'],
 ))
 
