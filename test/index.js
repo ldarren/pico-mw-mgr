@@ -115,5 +115,5 @@ app
 app.listen(3000, () => {
 	console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}')
 	console.info('GET localhost:3000/qs?s1=hello&s2=world&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
-	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"')
+	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"}')
 })

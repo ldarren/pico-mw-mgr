@@ -106,6 +106,11 @@ mwm.ajax = (method, href, opt) => {
 	pStr.compileRest(href, rest)
 	return (params, body, output, next) => {
 		return new Promise((resolve, reject) => {
+			const url = pStr.buildRest(href, rest, params)
+			if (!url) {
+				reject('invalid params')
+				return next('invalid params')
+			}
 			picosUtil.ajax(method, pStr.buildRest(href, rest, params), body, opt, (err, state, res) => {
 				if (4 !== state) return
 				if (err) {
