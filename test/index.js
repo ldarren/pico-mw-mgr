@@ -63,7 +63,7 @@ router.get('/users/:userId', mwm(
 	}, 'params'), 'ctx', 'user'],
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],
-	[mwm.ajax('GET', 'https://httpbin.org/anything/%userId'), 'user', ':inv', 'bin'],
+	[mwm.ajax('GET', 'anything/%userId', {domain:'https://httpbin.org/'}), 'user', ':inv', 'bin'],
 	[mwm.log, 'user', ':inv', 'bin'],
 	[combine, 'user', ':inv', 'bin', 'output'],
 	[output, 'ctx', 'output'],

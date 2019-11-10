@@ -4,7 +4,6 @@ const pObj = require('pico-common').export('pico/obj')
 const pStr = require('pico-common').export('pico/str')
 const dummyNext = () => {}
 const router = {}
-const rest = []
 
 async function pipeline(middlewares, i, data, next){
 	const middleware = middlewares[i++]
@@ -102,7 +101,9 @@ mwm.dot = (input, params, def, output, next) => {
 	return next()
 }
 
-mwm.ajax = (method, href, opt) => {
+mwm.ajax = (method, path, opt) => {
+	const href = pObj.dot(opt, ['domain'], '') + path
+	const rest = []
 	pStr.compileRest(href, rest)
 	return (params, body, output, next) => {
 		return new Promise((resolve, reject) => {
