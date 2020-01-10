@@ -7,10 +7,11 @@ const inv = require('./inv')
 const app = new Koa()
 const router = new Router()
 
-async function combine(ctx, user, inv, output, next){
+async function combine(user, inv, bin, output, next){
 	Object.assign(output, {
 		user,
-		inventory: inv
+		inventory: inv,
+		bin
 	})
 	await next()
 }
@@ -27,24 +28,22 @@ async function output(ctx, data, next){
 
 mwm(
 	'warn/user/id',
-	[output, 'warn'],
+	[output, 'ctx', 'warn'],
 )
 
 mwm(
 	'print',
-	[(ctx, output, next) => {
-		console.log(output); return next()
-	}, 'output']
+	[mwm.log, 'output'],
 )
 
 mwm(
 	'* * * * * *',
-	[async (ctx, next) => {
+	[async (next) => {
 		console.log('tick', Date.now())
 
 		const prints = []
 		for (let i = 0; i < 2; i++){
-			prints.push(mwm.branch(ctx, 'print', {output: {data: i}}))
+			prints.push(mwm.branch('print', {output: {data: i}}))
 		}
 		await Promise.all(prints)
 		await next()
@@ -53,46 +52,60 @@ mwm(
 
 router.get('/users/:userId', mwm(
 	[mwm.validate({
-		userId: {
-			type: 'number',
-			required: 1
+		type: 'object',
+		required: 1,
+		spec: {
+			userId: {
+				type: 'number',
+				required: 1
+			}
 		}
-	}, 'params'), 'user'],
+	}, 'params'), 'ctx', 'user'],
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],
-	[combine, 'user', ':inv', 'output'],
-	[output, 'output'],
+	[mwm.ajax('GET', 'anything/%userId', {domain:'https://httpbin.org/'}), 'user', ':inv', 'bin'],
+	[mwm.log, 'user', ':inv', 'bin'],
+	[combine, 'user', ':inv', 'bin', 'output'],
+	[output, 'ctx', 'output'],
 ))
 
 router.get('/qs', mwm(
 	[mwm.validate({
-		string0: 'string',
-		'array0[]': 'array',
-		string1: {
-			type: 'string',
-			required: 1
-		},
-		array1: {
-			type: 'array',
-			required: 1
+		type: 'object',
+		required: 1,
+		spec: {
+			s0: 'string',
+			'a0': 'array',
+			s1: {
+				type: 'string',
+				required: 1
+			},
+			'a1': {
+				type: 'array',
+				required: 1
+			}
 		}
-	}, 'query'), 'input'],
-	[output, 'input'],
+	}, 'query'), 'ctx', 'input'],
+	[output, 'ctx', 'input'],
 ))
 
 router.get('/header', mwm(
 	[mwm.validate({
-		key0: 'string',
-		key1: {
-			type: 'string',
-			required: 1
-		},
-	}, 'headers'), 'input'],
-	[output, 'input'],
+		type: 'object',
+		required: 1,
+		spec: {
+			key0: 'string',
+			key1: {
+				type: 'string',
+				required: 1
+			},
+		}
+	}, 'headers'), 'ctx', 'input'],
+	[output, 'ctx', 'input'],
 ))
 
 router.get('/', mwm(
-	[output, null]
+	[output, 'ctx', null]
 ))
 
 app
@@ -101,6 +114,6 @@ app
 
 app.listen(3000, () => {
 	console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}')
-	console.info('GET localhost:3000/qs?s1=hello&s2=world=a0[]=foo&a0[]=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
-	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"')
+	console.info('GET localhost:3000/qs?s1=hello&s2=world&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
+	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"}')
 })

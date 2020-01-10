@@ -1,5 +1,5 @@
 module.exports = {
-	async getUser(ctx, user, name, next){
+	async getUser(user, name, next){
 		if (!user.userId) return await next({
 			status: 401,
 			message: 'invalid userid: ' + user.userId,
