@@ -54,15 +54,18 @@ function mwm(...middlewares){
 		middlewares.shift()
 		const ast = pTime.parse(key)
 		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
+		if (router[key]) throw new Error(`Middleware router [${key}] is not available`)
 		return router[key] = middlewares
 	}
 	return (ctx, next) => pipeline(middlewares, 0, {ctx}, next)
 }
 
+mwm.isDefined = key => !!router[key]
+
 mwm.log = (...args) => {
 	const len = args.length
 	args.slice(0, len - 1).forEach(a => console.log(a))
-	args[len - 1]()
+	return args[len - 1]()
 }
 
 mwm.validate = (spec, source = 'body') => {
