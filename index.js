@@ -28,13 +28,14 @@ async function pipeline(middlewares, i, data, next){
 		return datakey
 	})
 
-	await middleware[0](...params, async (err, route, newdata) => {
+	await middleware[0](...params, async (err, route, newdata = data) => {
 		if (err) {
 			if (data && data.ctx) return data.ctx.throw(err)
 			throw err
 		}
-		if (route && router[route]){
-			return await pipeline(router[route], 0, newdata, next)
+		if (route) {
+			if (router[route]) return await pipeline(router[route], 0, newdata, next)
+			throw new Error(`Middleware router [${key}] not found`)
 		}
 		await pipeline(middlewares, i, data, next)
 	})
@@ -54,7 +55,7 @@ function mwm(...middlewares){
 		middlewares.shift()
 		const ast = pTime.parse(key)
 		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
-		if (router[key]) throw new Error(`Middleware router [${key}] is not available`)
+		if (router[key]) throw new Error(`Middleware router [${key}] is already defined`)
 		return router[key] = middlewares
 	}
 	return (ctx, next) => pipeline(middlewares, 0, {ctx}, next)
