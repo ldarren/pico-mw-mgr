@@ -35,7 +35,7 @@ async function pipeline(middlewares, i, data, next){
 		}
 		if (route) {
 			if (router[route]) return await pipeline(router[route], 0, newdata, next)
-			throw new Error(`Middleware router [${key}] not found`)
+			throw new Error(`Middleware router [${route}] not found`)
 		}
 		await pipeline(middlewares, i, data, next)
 	})
