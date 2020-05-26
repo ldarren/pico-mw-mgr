@@ -74,7 +74,7 @@ mwm.validate = (spec, source = 'body') => {
 		let obj
 		switch(source){
 		case 'body':
-			obj = ctx.request.body
+			obj = ctx.req.body || ctx.request.body
 			break
 		case 'params':
 			obj = ctx.params
