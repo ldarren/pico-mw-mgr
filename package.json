@@ -1,7 +1,7 @@
 {
   "name": "pico-mw-mgr",
-  "version": "0.3.5",
-  "description": "pico sized middleware manager for koajs",
+  "version": "0.3.6",
+  "description": "A pico sized middleware manager for koajs",
   "main": "index.js",
   "scripts": {
     "test": "node test/index.js",
@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "pico-common": "^0.12.3",
+    "pico-common": "^0.12.4",
     "picos-util": "^0.1.4"
   },
   "devDependencies": {
