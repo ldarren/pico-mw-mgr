@@ -70,7 +70,18 @@ mwm.log = (...args) => {
 }
 
 mwm.validate = (spec, source = 'body') => {
-	return (ctx, output, next) => {
+	return (ctx, output, ...args) => {
+		let next
+		let mapper
+		switch(args.length){
+		case 1:
+			next = args[0]
+			break
+		case 2:
+			mapper = args[0]
+			next = args[1]
+		}
+
 		let obj
 		switch(source){
 		case 'body':
@@ -86,7 +97,7 @@ mwm.validate = (spec, source = 'body') => {
 			obj = ctx.request.headers
 			break
 		}
-		const found = pObj.validate(spec, obj, output)
+		const found = pObj.validate(spec, obj, output, mapper)
 		if (found) return next(`invalid params [${found}]`)
 		return next()
 	}
