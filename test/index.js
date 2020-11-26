@@ -74,7 +74,7 @@ router.get('/qs', mwm(
 		type: 'object',
 		required: 1,
 		spec: {
-			group: 'array',
+			criteria: 'array',
 			s0: 'string',
 			'a0': 'array',
 			s1: {
@@ -115,6 +115,6 @@ app
 
 app.listen(3000, () => {
 	console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}')
-	console.info('GET localhost:3000/qs?s1=hello&s2=world&a0=key1&a0=key2&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","group": [{"a0":"key1", "a1": "foo"}, {"a0": "key2", "a1": "bar"}]}')
+	console.info('GET localhost:3000/qs?s1=hello&s2=world&a0=key1&a0=key2&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","criteria": [{"a0":"key1", "a1": "foo"}, {"a0": "key2", "a1": "bar"}]}')
 	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"}')
 })
