@@ -28,13 +28,14 @@ async function pipeline(middlewares, i, data, next){
 		return datakey
 	})
 
-	await middleware[0](...params, async (err, route, newdata) => {
+	await middleware[0](...params, async (err, route, newdata = data) => {
 		if (err) {
 			if (data && data.ctx) return data.ctx.throw(err)
 			throw err
 		}
-		if (route && router[route]){
-			return await pipeline(router[route], 0, newdata, next)
+		if (route) {
+			if (router[route]) return await pipeline(router[route], 0, newdata, next)
+			throw new Error(`Middleware router [${route}] not found`)
 		}
 		await pipeline(middlewares, i, data, next)
 	})
@@ -54,23 +55,37 @@ function mwm(...middlewares){
 		middlewares.shift()
 		const ast = pTime.parse(key)
 		if (ast) return setTimeout(trigger, pTime.nearest(...ast) - Date.now(), ast, middlewares)
+		if (router[key]) throw new Error(`Middleware router [${key}] is already defined`)
 		return router[key] = middlewares
 	}
 	return (ctx, next) => pipeline(middlewares, 0, {ctx}, next)
 }
 
+mwm.isDefined = key => !!router[key]
+
 mwm.log = (...args) => {
 	const len = args.length
 	args.slice(0, len - 1).forEach(a => console.log(a))
-	args[len - 1]()
+	return args[len - 1]()
 }
 
 mwm.validate = (spec, source = 'body') => {
-	return (ctx, output, next) => {
+	return (ctx, output, ...args) => {
+		let next
+		let mapper
+		switch(args.length){
+		case 1:
+			next = args[0]
+			break
+		case 2:
+			mapper = args[0]
+			next = args[1]
+		}
+
 		let obj
 		switch(source){
 		case 'body':
-			obj = ctx.request.body
+			obj = ctx.req.body || ctx.request.body
 			break
 		case 'params':
 			obj = ctx.params
@@ -82,7 +97,7 @@ mwm.validate = (spec, source = 'body') => {
 			obj = ctx.request.headers
 			break
 		}
-		const found = pObj.validate(spec, obj, output)
+		const found = pObj.validate(spec, obj, output, mapper)
 		if (found) return next(`invalid params [${found}]`)
 		return next()
 	}
