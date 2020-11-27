@@ -2,7 +2,7 @@ const picosUtil = require('picos-util')
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
 const pStr = require('pico-common').export('pico/str')
-const CRITERIA = [['index', 'csv'], ['range', 'start', 'end']]
+const GROUPING = [['index', 'csv'], ['range', 'start', 'end']]
 const dummyNext = () => {}
 const router = {}
 
@@ -62,14 +62,14 @@ function mwm(...middlewares){
 	return (ctx, next) => pipeline(middlewares, 0, {ctx}, next)
 }
 
-function pushCriteria(input, criteria, i, output){
-	for (let keys; (keys = criteria[i]); i++){
-		const val0 = input[keys[0]]
+function groupQuery(input, grouping, output = []){
+	for (let i = 0, keys, val0; (keys = grouping[i]); i++){
+		val0 = input[keys[0]]
 		if (!val0) continue
 		if (Array.isArray(val0)){
-			for (let i = 0, l = val0.length; i < l; i++){
+			for (let j = 0, l = val0.length; j < l; j++){
 				output.push(keys.reduce((acc, key) => {
-					acc[key] = input[key][i]
+					acc[key] = input[key][j]
 					return acc
 				}, {}))
 			}
@@ -80,6 +80,7 @@ function pushCriteria(input, criteria, i, output){
 			}, {}))
 		}
 	}
+	return output
 }
 
 mwm.isDefined = key => !!router[key]
@@ -90,7 +91,7 @@ mwm.log = (...args) => {
 	return args[len - 1]()
 }
 
-mwm.validate = (spec, source = 'body', criteria = CRITERIA) => {
+mwm.validate = (spec, source = 'body', grouping = GROUPING) => {
 	return (ctx, output, ...args) => {
 		let next
 		let mapper
@@ -113,8 +114,8 @@ mwm.validate = (spec, source = 'body', criteria = CRITERIA) => {
 			obj = ctx.params
 			break
 		case 'query':
-			obj = Object.assign({criteria: []}, ctx.request.query)
-			pushCriteria(obj, criteria, 0, obj.criteria)
+			group = groupQuery(ctx.request.query, grouping)
+			obj = Object.assign({group}, ctx.request.query)
 			break
 		case 'headers':
 			obj = ctx.request.headers
