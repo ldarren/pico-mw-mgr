@@ -2,7 +2,7 @@ const picosUtil = require('picos-util')
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
 const pStr = require('pico-common').export('pico/str')
-const GROUPING = [['index', 'csv'], ['range', 'gt', 'lt'], ['time', 'start', 'end']]
+const GROUPING = [['index', 'csv'], ['range', 'gte', 'lte'], ['time', 'start', 'end']]
 const dummyNext = () => {}
 const router = {}
 
