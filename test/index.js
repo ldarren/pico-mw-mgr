@@ -63,7 +63,7 @@ router.get('/users/:userId', mwm(
 	}, 'params'), 'ctx', 'user'],
 	[ums.getUser, 'user', '#darren liew'],
 	[inv.getInv, 'user', ':inv', 1111],
-	[mwm.ajax('GET', 'anything/%userId', {domain:'https://httpbin.org/'}), 'user', ':inv', 'bin'],
+	[mwm.ajax('GET', '/anything/:userId', {domain:'https://httpbin.org'}), 'user', ':inv', 'bin'],
 	[mwm.log, 'user', ':inv', 'bin'],
 	[combine, 'user', ':inv', 'bin', 'output'],
 	[output, 'ctx', 'output'],
@@ -74,6 +74,7 @@ router.get('/qs', mwm(
 		type: 'object',
 		required: 1,
 		spec: {
+			group: 'array',
 			s0: 'string',
 			'a0': 'array',
 			s1: {
@@ -85,7 +86,7 @@ router.get('/qs', mwm(
 				required: 1
 			}
 		}
-	}, 'query'), 'ctx', 'input'],
+	}, 'query', [['a0', 'a1']]), 'ctx', 'input'],
 	[output, 'ctx', 'input'],
 ))
 
@@ -114,6 +115,6 @@ app
 
 app.listen(3000, () => {
 	console.info('GET localhost:3000/users/:userid response ===  {"user":{"userId":":userid"},"inv":[{"id":"xxxx"}]}')
-	console.info('GET localhost:3000/qs?s1=hello&s2=world&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","a0":["foo","bar"]}')
+	console.info('GET localhost:3000/qs?s1=hello&s2=world&a0=key1&a0=key2&a1=foo&a1=bar response ===  {"s0":"hello","s1":"world","group": [{"a0":"key1", "a1": "foo"}, {"a0": "key2", "a1": "bar"}]}')
 	console.info('GET localhost:3000/header response ===  {"key0":"val0","key1":"val1"}')
 })

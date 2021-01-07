@@ -2,6 +2,7 @@ const picosUtil = require('picos-util')
 const pTime = require('pico-common').export('pico/time')
 const pObj = require('pico-common').export('pico/obj')
 const pStr = require('pico-common').export('pico/str')
+const GROUPING = [['index', 'csv'], ['range', 'gte', 'lte'], ['time', 'start', 'end']]
 const dummyNext = () => {}
 const router = {}
 
@@ -61,6 +62,27 @@ function mwm(...middlewares){
 	return (ctx, next) => pipeline(middlewares, 0, {ctx}, next)
 }
 
+function groupQuery(input, grouping, output = []){
+	for (let i = 0, keys, val0; (keys = grouping[i]); i++){
+		val0 = input[keys[0]]
+		if (!val0) continue
+		if (Array.isArray(val0)){
+			for (let j = 0, l = val0.length; j < l; j++){
+				output.push(keys.reduce((acc, key) => {
+					acc[key] = input[key][j]
+					return acc
+				}, {}))
+			}
+		}else{
+			output.push(keys.reduce((acc, key) => {
+				acc[key] = input[key]
+				return acc
+			}, {}))
+		}
+	}
+	return output
+}
+
 mwm.isDefined = key => !!router[key]
 
 mwm.log = (...args) => {
@@ -69,7 +91,7 @@ mwm.log = (...args) => {
 	return args[len - 1]()
 }
 
-mwm.validate = (spec, source = 'body') => {
+mwm.validate = (spec, source = 'body', grouping = GROUPING) => {
 	return (ctx, output, ...args) => {
 		let next
 		let mapper
@@ -83,6 +105,7 @@ mwm.validate = (spec, source = 'body') => {
 		}
 
 		let obj
+		let group
 		switch(source){
 		case 'body':
 			obj = ctx.req.body || ctx.request.body
@@ -91,7 +114,8 @@ mwm.validate = (spec, source = 'body') => {
 			obj = ctx.params
 			break
 		case 'query':
-			obj = Object.assign({}, ctx.request.query)
+			group = groupQuery(ctx.request.query, grouping)
+			obj = Object.assign({group}, ctx.request.query)
 			break
 		case 'headers':
 			obj = ctx.request.headers
@@ -117,17 +141,17 @@ mwm.dot = (input, params, def, output, next) => {
 }
 
 mwm.ajax = (method, path, opt) => {
-	const href = pObj.dot(opt, ['domain'], '') + path
-	const rest = []
-	pStr.compileRest(href, rest)
+	const domain = pObj.dot(opt, ['domain'], '')
+	const radix = new pStr.Radix
+	radix.add(path)
 	return (params, body, output, next) => {
 		return new Promise((resolve, reject) => {
-			const url = pStr.buildRest(href, rest, params)
+			const url = radix.build(path, params)
 			if (!url) {
 				reject('invalid params')
 				return next('invalid params')
 			}
-			picosUtil.ajax(method, pStr.buildRest(href, rest, params), body, opt, (err, state, res) => {
+			picosUtil.ajax(method, domain +  url, body, opt, (err, state, res) => {
 				if (4 !== state) return
 				if (err) {
 					reject(err)
