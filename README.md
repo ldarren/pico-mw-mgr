@@ -171,7 +171,7 @@ the above route will be triggered for every 5 minutes
 
 ## installation
 ```
-npm i pico-mw-mgr
+npm i pico-common picos-util pico-mw-mgr
 ```
 
 ## test
