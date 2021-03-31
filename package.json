@@ -1,6 +1,6 @@
 {
   "name": "pico-mw-mgr",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "A pico sized middleware manager for koajs",
   "main": "index.js",
   "scripts": {
@@ -14,8 +14,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "pico-common": "^0.14.18",
-    "picos-util": "^0.2.1"
+  },
+  "peerDependencies": {
+    "pico-common": "0.x",
+    "picos-util": "0.x"
   },
   "devDependencies": {
     "koa": "^2.13.1",
